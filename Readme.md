@@ -3,5 +3,8 @@
 ## uvicorn起動手順
 
 1. pipenv shell
-2. cd api
-3. uvicorn main:app --reload
+2. uvicorn main:app --reload
+
+## pipenv ライブラリインストール
+``` pipenv install xxx```
+
