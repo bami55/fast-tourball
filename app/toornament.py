@@ -3,6 +3,7 @@ import requests
 import app.settings as settings
 
 from models.tournament import Tournament
+from models.participant import Participant
 
 class Toornament:
 
@@ -19,7 +20,7 @@ class Toornament:
             'grant_type': 'client_credentials',
             'client_id': settings.CLIENT_ID,
             'client_secret': settings.CLIENT_SECRET,
-            'scope': 'organizer:view organizer:admin',
+            'scope': 'organizer:view organizer:admin organizer:participant',
         }
         r = requests.post(url, data=data)
         data = r.json()
@@ -44,9 +45,7 @@ class Toornament:
         r = self.send_request(url, headers, settings.REQUEST_METHOD['get'])
         tournaments = r.json()
         
-        ret = []
-        for t in tournaments:
-            ret.append(Tournament(**t))
+        ret = Tournament(**t) for t in tournaments
         return ret
 
     def get_participants(self, tournament_id):
@@ -55,4 +54,7 @@ class Toornament:
             'Range': 'participants=0-49'
         }
         r = self.send_request(url, headers, settings.REQUEST_METHOD['get'])
-        return r.json()
+        participants = r.json()
+        
+        ret = Participant(**p) for p in participants
+        return ret
