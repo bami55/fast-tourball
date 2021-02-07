@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional
+import os
 
 app = FastAPI()
 
@@ -15,7 +16,10 @@ class Course(BaseModel):
 
 @app.get("/")
 def read_root():
-    return {"greetings": "Welcome to LearnCodeOnline.in"}
+    return {
+        "greetings": "Welcome to LearnCodeOnline.in",
+        "debug": os.environ['DEBUG']
+    }
 
 
 @app.get("/courses")
