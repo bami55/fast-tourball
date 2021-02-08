@@ -8,6 +8,7 @@ fastapi = "*"
 uvicorn = "*"
 python-dotenv = "*"
 requests = "*"
+autopep8 = "*"
 
 [dev-packages]
 

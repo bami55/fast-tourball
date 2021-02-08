@@ -2,14 +2,16 @@ from pydantic import BaseModel
 from datetime import date, datetime
 from typing import List, Optional
 
+
 class Logo(BaseModel):
     logo_small: str
     logo_medium: str
     logo_large: str
     original: str
 
+
 class Tournament(BaseModel):
-    id: int
+    id: str
     discipline: str
     name: str
     full_name: Optional[str]

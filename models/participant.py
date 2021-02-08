@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Dict, List, Optional
 
+
 class CustomField(BaseModel):
     machine_name: Optional[str]
     label: Optional[str]
@@ -12,6 +13,7 @@ class CustomField(BaseModel):
     public: Optional[bool]
     position: Optional[bool]
 
+
 class Lineup(BaseModel):
     name: str
     custom_user_identifier: Optional[str]
@@ -19,13 +21,14 @@ class Lineup(BaseModel):
     custom_fields: Optional[CustomField]
     user_id: Optional[str]
 
+
 class Participant(BaseModel):
     name: str
     email: Optional[str]
     custom_user_identifier: Optional[str]
     checked_in: bool
     custom_fields: Optional[CustomField]
-    id: int
+    id: str
     user_id: Optional[str]
     created_at: datetime
     lineup: List[Lineup]

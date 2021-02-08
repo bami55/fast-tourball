@@ -28,3 +28,8 @@ def get_participants(tournament_id):
     data = tournaments.get_participants(tournament_id)
     return {"participants": data}
 
+
+@app.get("/tournaments/{tournament_id}/groups")
+def get_groups(tournament_id):
+    data = tournaments.get_groups(tournament_id)
+    return {"groups": data}
