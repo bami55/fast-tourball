@@ -1,13 +1,8 @@
 import json
 import requests
-import app.settings as settings
+from app import settings
 
-from models.tournament import Tournament
-from models.participant import Participant
-from models.group import Group
-from models.stage import Stage
-from models.match import Match
-from models.match_game import MatchGame
+from models import Tournament, Participant, Group, Stage, Match, MatchGame
 
 
 class Toornament:
