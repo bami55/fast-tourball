@@ -1,6 +1,6 @@
 import json
 import requests
-from app import settings
+from apps import settings
 
 from models import Tournament, Participant, Group, Stage, Match, MatchGame
 
