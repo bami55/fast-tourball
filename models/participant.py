@@ -3,20 +3,20 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 class CustomField(BaseModel):
-    machine_name: str
-    label: str
-    target_type: str
-    type: str
-    default_value: str
-    required: bool
-    public: bool
-    position: bool
+    machine_name: Optional[str]
+    label: Optional[str]
+    target_type: Optional[str]
+    type: Optional[str]
+    default_value: Optional[str]
+    required: Optional[bool]
+    public: Optional[bool]
+    position: Optional[bool]
 
 class Lineup(BaseModel):
     name: str
     custom_user_identifier: Optional[str]
-    email: str
-    custom_fields: str
+    email: Optional[str]
+    custom_fields: Optional[CustomField]
     user_id: Optional[str]
 
 class Participant(BaseModel):
@@ -24,8 +24,8 @@ class Participant(BaseModel):
     email: Optional[str]
     custom_user_identifier: Optional[str]
     checked_in: bool
-    custom_fields: Optional[str]
+    custom_fields: Optional[CustomField]
     id: int
     user_id: Optional[str]
     created_at: datetime
-    lineup: List[]
+    lineup: List[Lineup]

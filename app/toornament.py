@@ -45,7 +45,7 @@ class Toornament:
         r = self.send_request(url, headers, settings.REQUEST_METHOD['get'])
         tournaments = r.json()
         
-        ret = Tournament(**t) for t in tournaments
+        ret = [Tournament(**t) for t in tournaments]
         return ret
 
     def get_participants(self, tournament_id):
@@ -56,5 +56,5 @@ class Toornament:
         r = self.send_request(url, headers, settings.REQUEST_METHOD['get'])
         participants = r.json()
         
-        ret = Participant(**p) for p in participants
+        ret = [Participant(**p) for p in participants]
         return ret
