@@ -22,13 +22,10 @@ class Toornament:
     access_token = None
 
     def __init__(self, *args, **kwargs):
-        self.access_token = self.get_access_token()
+        self.auth()
 
-    def get_access_token(self):
-        """アクセストークン取得
-
-        Returns:
-            str: アクセストークン
+    def auth(self):
+        """アクセス認証
         """
 
         url = 'https://api.toornament.com/oauth/v2/token'
@@ -40,7 +37,7 @@ class Toornament:
         }
         r = requests.post(url, data=data)
         data = r.json()
-        return data['access_token']
+        self.access_token = data['access_token']
 
     def send_request(self, url, headers={}, method=settings.REQUEST_METHOD['get']):
         """リクエスト送信
