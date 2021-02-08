@@ -5,6 +5,8 @@ import app.settings as settings
 from models.tournament import Tournament
 from models.participant import Participant
 from models.group import Group
+from models.stage import Stage
+from models.match import Match
 
 
 class Toornament:
@@ -40,12 +42,12 @@ class Toornament:
         data = r.json()
         return data['access_token']
 
-    def send_request(self, url, headers_option, method):
+    def send_request(self, url, headers={}, method=settings.REQUEST_METHOD['get']):
         """リクエスト送信
 
         Args:
             url (str): URL
-            headers_option (dict): Header情報
+            headers (dict): Header情報
             method (string): Method
 
         Returns:
@@ -57,10 +59,10 @@ class Toornament:
             'Authorization': f'Bearer {self.access_token}',
             'X-Api-Key': settings.API_KEY
         }
-        headers = {**base_headers, **headers_option}
+        req_headers = {**base_headers, **headers}
 
         if method == settings.REQUEST_METHOD['get']:
-            return requests.get(request_url, headers=headers)
+            return requests.get(request_url, headers=req_headers)
 
     def get_tournaments(self):
         """トーナメントデータ取得
@@ -112,3 +114,37 @@ class Toornament:
         r = self.send_request(url, headers, settings.REQUEST_METHOD['get'])
         groups = [Group(**x) for x in r.json()]
         return groups
+
+    def get_stages(self, tournament_id):
+        """ステージデータ取得
+
+        Args:
+            tournament_id (int): トーナメントID
+
+        Returns:
+            List[Stage]: ステージデータ
+        """
+
+        url = f'/tournaments/{tournament_id}/stages'
+        r = self.send_request(url)
+        stages = [Stage(**x) for x in r.json()]
+        return stages
+
+    def get_matches(self, tournament_id):
+        """マッチデータ取得
+
+        Args:
+            tournament_id (int): トーナメントID
+
+        Returns:
+            List[Match]: マッチデータ
+        """
+
+        url = f'/tournaments/{tournament_id}/matches'
+        headers = {
+            'Range': 'matches=0-99'
+        }
+        r = self.send_request(url, headers=headers)
+        ret = r.json()
+        matches = [Match(**x) for x in r.json()]
+        return matches

@@ -33,3 +33,15 @@ def get_participants(tournament_id):
 def get_groups(tournament_id):
     data = tournaments.get_groups(tournament_id)
     return {"groups": data}
+
+
+@app.get("/tournaments/{tournament_id}/stages")
+def get_stages(tournament_id):
+    data = tournaments.get_stages(tournament_id)
+    return {"stages": data}
+
+
+@app.get("/tournaments/{tournament_id}/matches")
+def get_matches(tournament_id):
+    data = tournaments.get_matches(tournament_id)
+    return {"matches": data}

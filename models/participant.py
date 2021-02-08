@@ -2,17 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Dict, List, Optional
 
-
-class CustomField(BaseModel):
-    machine_name: Optional[str]
-    label: Optional[str]
-    target_type: Optional[str]
-    type: Optional[str]
-    default_value: Optional[str]
-    required: Optional[bool]
-    public: Optional[bool]
-    position: Optional[bool]
-
+from models.custom_field import CustomField
 
 class Lineup(BaseModel):
     name: str
