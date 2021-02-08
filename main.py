@@ -45,3 +45,9 @@ def get_stages(tournament_id):
 def get_matches(tournament_id):
     data = tournaments.get_matches(tournament_id)
     return {"matches": data}
+
+
+@app.get("/tournaments/{tournament_id}/matches/{match_id}/games")
+def get_matches(tournament_id, match_id):
+    data = tournaments.get_match_games(tournament_id, match_id)
+    return {"match_games": data}

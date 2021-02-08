@@ -7,6 +7,7 @@ from models.participant import Participant
 from models.group import Group
 from models.stage import Stage
 from models.match import Match
+from models.match_game import MatchGame
 
 
 class Toornament:
@@ -145,3 +146,23 @@ class Toornament:
         ret = r.json()
         matches = [Match(**x) for x in r.json()]
         return matches
+
+    def get_match_games(self, tournament_id, match_id):
+        """マッチ内の各試合データ取得
+
+        Args:
+            tournament_id (int): トーナメントID
+            match_id (int): マッチID
+
+        Returns:
+            List[MatchGame]: マッチ内の各試合データ
+        """
+
+        url = f'/tournaments/{tournament_id}/matches/{match_id}/games'
+        headers = {
+            'Range': 'games=0-49'
+        }
+        r = self.send_request(url, headers=headers)
+        ret = r.json()
+        match_games = [MatchGame(**x) for x in r.json()]
+        return match_games
