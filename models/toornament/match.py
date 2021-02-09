@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from models.custom_field import CustomField
+from models.toornament.custom_field import CustomField
 
 
 class Participant(BaseModel):

@@ -2,7 +2,7 @@ import json
 import requests
 from apps import settings
 
-from models import Tournament, Participant, Group, Stage, Match, MatchGame
+from models.toornament import Tournament, Participant, Group, Stage, Match, MatchGame
 
 
 class Toornament:
