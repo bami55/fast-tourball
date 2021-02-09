@@ -3,10 +3,11 @@ from pydantic import BaseModel
 
 import os
 
-from apps import Toornament
+from apps import Toornament, Ballchasing
 
 app = FastAPI()
 tournaments = Toornament()
+ballchasing = Ballchasing()
 
 
 @app.get("/")
@@ -51,3 +52,9 @@ def get_matches(tournament_id):
 def get_matches(tournament_id, match_id):
     data = tournaments.get_match_games(tournament_id, match_id)
     return {"match_games": data}
+
+
+@app.get("/replay/groups/{group_id}")
+def get_replay_group(group_id):
+    data = ballchasing.get_group(group_id)
+    return {"replay_group": data}
