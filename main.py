@@ -58,3 +58,9 @@ def get_matches(tournament_id, match_id):
 def get_replay_group(group_id):
     data = ballchasing.get_group(group_id)
     return {"replay_group": data}
+
+
+@app.get("/replay/get_group_children/{group_id}")
+def get_group_children(group_id):
+    data = ballchasing.get_group_children(group_id)
+    return {"replay_groups": data}
