@@ -1,5 +1,6 @@
 import requests
 from apps import settings
+from models.ballchasing import ReplayGroup
 
 
 class Ballchasing:
@@ -26,18 +27,3 @@ class Ballchasing:
 
         if method == settings.REQUEST_METHOD['get']:
             return requests.get(request_url, headers=req_headers)
-
-    def get_group(self, group_id):
-        """グループデータ取得
-
-        Args:
-            group_id (int): グループID
-
-        Returns:
-            List[Group]: グループデータ
-        """
-
-        url = f'/groups/{group_id}'
-        r = self.send_request(url)
-        group = r.json()
-        return group
