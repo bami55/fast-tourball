@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-from models.ballchasing import Cumulative, GameAverage, Player
+from api.models.ballchasing import Cumulative, GameAverage, Player
 
 
 class Team(BaseModel):

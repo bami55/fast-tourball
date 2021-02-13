@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from models.ballchasing import CumulativeCore, Boost, Demo, Movement, Positioning
+from api.models.ballchasing import CumulativeCore, Boost, Demo, Movement, Positioning
 
 
 class Cumulative(BaseModel):
