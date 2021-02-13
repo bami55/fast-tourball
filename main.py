@@ -63,4 +63,4 @@ def get_replay_group(group_id):
 @app.get("/replay/get_group_children/{group_id}")
 def get_group_children(group_id):
     data = ballchasing.get_group_children(group_id)
-    return {"replay_groups": data}
+    return {"replay_group_children": data}
