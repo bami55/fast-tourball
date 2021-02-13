@@ -1,6 +1,6 @@
 import requests
-from apps import settings
-from models.ballchasing import ReplayGroup
+from api import settings
+from api.models.ballchasing import ReplayGroup
 
 
 class Ballchasing:

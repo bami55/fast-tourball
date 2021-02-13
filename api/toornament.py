@@ -1,8 +1,8 @@
 import json
 import requests
-from apps import settings
+from api import settings
 
-from models.toornament import Tournament, Participant, Group, Stage, Match, MatchGame
+from api.models.toornament import Tournament, Participant, Group, Stage, Match, MatchGame
 
 
 class Toornament:

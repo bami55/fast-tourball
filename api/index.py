@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 import os
 
-from apps import Toornament, Ballchasing
+from api import Toornament, Ballchasing
 
 app = FastAPI()
 tournaments = Toornament()

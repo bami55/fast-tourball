@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel
 from typing import List
-from models.ballchasing import Player, Team
+from api.models.ballchasing import Player, Team
 
 
 class Creator(BaseModel):
