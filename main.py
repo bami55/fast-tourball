@@ -80,5 +80,9 @@ def init_db(tournament_id, group_id):
 
 @app.get("/scores_by_days")
 def get_scores_by_days():
-    scores = ballchasing.get_scores_by_days()
-    return {"scores": scores}
+    try:
+        scores = ballchasing.get_scores_by_days()
+        return {"scores": scores}
+    except:
+        import sys
+        return {"error": sys.exc_info()}
