@@ -15,7 +15,8 @@ ballchasing = Ballchasing()
 def read_root():
     return {
         "greetings": "Welcome to LearnCodeOnline.in",
-        "debug": os.environ['DEBUG']
+        "debug": os.environ['DEBUG'],
+        "test": "check deploy."
     }
 
 
