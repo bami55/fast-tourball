@@ -600,6 +600,9 @@ class Ballchasing:
             cursor, "INSERT INTO game_average_demos (id, inflicted, taken) VALUES %s", values['demo'])
 
     def get_scores_by_days(self):
+        """Dayごとのスコア取得
+        """
+
         sql = """
             select
                 grp.name as group_name,
