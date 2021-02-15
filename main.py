@@ -84,5 +84,6 @@ def get_scores_by_days():
         scores = ballchasing.get_scores_by_days()
         return {"scores": scores}
     except:
-        import sys
-        return {"error": sys.exc_info()}
+        import traceback
+        st = traceback.format_exc()
+        return {"error": st}
