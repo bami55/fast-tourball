@@ -76,3 +76,9 @@ def init_db(tournament_id, group_id):
     tournaments.init_db(tournament_id)
     ballchasing.init_db(group_id)
     return {"init_db": "success!"}
+
+
+@app.get("/scores_by_days")
+def get_scores_by_days():
+    scores = ballchasing.get_scores_by_days()
+    return {"scores": scores}

@@ -155,9 +155,9 @@ class Ballchasing:
             group (ReplayGroup): グループ情報
             parent_group_id (str): 親グループID
         """
-        values = (group.id, group.name, parent_group_id)
+        values = (group.id, group.name, parent_group_id, group.created)
         format_str = self.create_format_str(values)
-        cursor.execute(f"INSERT INTO groups (id, name, parent_group_id) VALUES ({format_str})", values)
+        cursor.execute(f"INSERT INTO groups (id, name, parent_group_id, created) VALUES ({format_str})", values)
 
     def init_db_player(self, cursor, player):
         """プレイヤー情報初期化
@@ -598,3 +598,38 @@ class Ballchasing:
             cursor, "INSERT INTO game_average_positionings (id, avg_distance_to_ball, avg_distance_to_ball_possession, avg_distance_to_ball_no_possession, time_defensive_third, time_neutral_third, time_offensive_third, time_defensive_half, time_offensive_half, time_behind_ball, time_infront_ball, time_most_back, time_most_forward, goals_against_while_last_defender, time_closest_to_ball, time_farthest_from_ball, percent_defensive_third, percent_offensive_third, percent_neutral_third, percent_defensive_half, percent_offensive_half, percent_behind_ball, percent_infront_ball) VALUES %s", values['positioning'])
         extras.execute_values(
             cursor, "INSERT INTO game_average_demos (id, inflicted, taken) VALUES %s", values['demo'])
+
+    def get_scores_by_days(self):
+        sql = """
+            select
+                grp.name as group_name,
+                ply.name as player_name,
+                cml.wins,
+                cml_core.score,
+                cml_core.goals,
+                cml_core.shots,
+                cml_core.shooting_percentage,
+                cml_core.assists,
+                cml_core.saves,
+                grp.created as group_created
+            from
+                groups grp
+            inner join cumulatives cml on
+                grp.id = cml.group_id
+            inner join cumulative_cores cml_core on
+                cml.core_id = cml_core.id
+            inner join players ply on
+                cml.player_id = ply.id
+            where
+                grp.parent_group_id is not null
+            order by
+                grp.created, cml_core.score desc
+        """
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql)
+                columns = [column[0] for column in cursor.description]
+                results = []
+                for row in cursor.fetchall():
+                    results.append(dict(zip(columns, row)))
+                return results
