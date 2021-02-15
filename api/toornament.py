@@ -1,7 +1,7 @@
 import json
 import requests
-from api import settings
 
+from api import settings, database
 from api.models.toornament import Tournament, Participant, Group, Stage, Match, MatchGame
 
 
@@ -16,8 +16,10 @@ class Toornament:
     ]
 
     access_token = None
+    db = None
 
     def __init__(self, *args, **kwargs):
+        self.db = kwargs.get('db')
         self.auth()
 
     def auth(self):
@@ -161,3 +163,21 @@ class Toornament:
         ret = r.json()
         match_games = [MatchGame(**x) for x in r.json()]
         return match_games
+
+    def init_db(self, tournament_id):
+        """DB初期化
+
+        Args:
+            tournament_id (int): トーナメントID
+        """
+
+        with database.get_connection() as conn:
+            with conn.cursor() as cur:
+                # チーム情報書き換え
+                participants = self.get_participants(tournament_id)
+                cur.execute('TRUNCATE TABLE teams')
+                for participant in participants:
+                    id = participant.id
+                    name = participant.name
+                    cur.execute(
+                        "INSERT INTO teams (id, name) VALUES (%s, %s)", (id, name))

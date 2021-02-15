@@ -6,6 +6,7 @@ import os
 from api import Toornament, Ballchasing
 
 app = FastAPI()
+
 tournaments = Toornament()
 ballchasing = Ballchasing()
 
@@ -63,4 +64,14 @@ def get_replay_group(group_id):
 @app.get("/replay/get_group_children/{group_id}")
 def get_group_children(group_id):
     data = ballchasing.get_group_children(group_id)
+    for day in data:
+        for player in day.players:
+            print(player.name)
     return {"replay_group_children": data}
+
+
+@app.get("/init_db/{tournament_id}/{group_id}")
+def init_db(tournament_id, group_id):
+    tournaments.init_db(tournament_id)
+    ballchasing.init_db(group_id)
+    return {"init_db": "success!"}

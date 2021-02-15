@@ -1,7 +1,11 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class Boost(BaseModel):
+    bpm: Optional[float]
+    bcpm: Optional[float]
+    avg_amount: Optional[float]
     amount_collected: float
     amount_stolen: float
     amount_collected_big: float
@@ -23,3 +27,7 @@ class Boost(BaseModel):
     time_boost_25_50: float
     time_boost_50_75: float
     time_boost_75_100: float
+    percent_boost_0_25: Optional[float]
+    percent_boost_25_50: Optional[float]
+    percent_boost_50_75: Optional[float]
+    percent_boost_75_100: Optional[float]
