@@ -179,5 +179,6 @@ class Toornament:
                 for participant in participants:
                     id = participant.id
                     name = participant.name
-                    cur.execute(
-                        "INSERT INTO teams (id, name) VALUES (%s, %s)", (id, name))
+                    cur.execute("SELECT ballchasing_id FROM cnv_teams WHERE toornament_id = %s", [id])
+                    bc_team_id = cur.fetchone()[0]
+                    cur.execute("INSERT INTO teams (id, name, bc_team_id) VALUES (%s, %s, %s)", (id, name, bc_team_id))
