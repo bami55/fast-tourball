@@ -16,8 +16,7 @@ ballchasing = Ballchasing()
 @app.get("/")
 def read_root():
     return {
-        "greetings": "Welcome to LearnCodeOnline.in",
-        "debug": os.environ['DEBUG'],
+        "dot_env_check": os.environ['DEBUG'],
         "test": "check deploy."
     }
 
