@@ -1,5 +1,7 @@
+import datetime
 import json
 import requests
+import traceback
 
 from api import settings, database
 from api.models.toornament import Tournament, Participant, Group, Stage, Match, MatchGame
@@ -164,7 +166,7 @@ class Toornament:
         match_games = [MatchGame(**x) for x in r.json()]
         return match_games
 
-    def init_db(self, tournament_id):
+    def init_db(self, tournament_id, background_task_id):
         """DB初期化
 
         Args:
@@ -172,13 +174,35 @@ class Toornament:
         """
 
         with database.get_connection() as conn:
-            with conn.cursor() as cur:
-                # チーム情報書き換え
-                participants = self.get_participants(tournament_id)
-                cur.execute('TRUNCATE TABLE teams')
-                for participant in participants:
-                    id = participant.id
-                    name = participant.name
-                    cur.execute("SELECT ballchasing_id FROM cnv_teams WHERE toornament_id = %s", [id])
-                    bc_team_id = cur.fetchone()[0]
-                    cur.execute("INSERT INTO teams (id, name, bc_team_id) VALUES (%s, %s, %s)", (id, name, bc_team_id))
+            with conn.cursor() as cursor:
+                # Background Task Status
+                values = (background_task_id, 'toornament init_db started', datetime.datetime.now())
+                cursor.execute("INSERT INTO background_tasks (id, status, created_at) VALUES (%s, %s, %s)", values)
+
+        st = None
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                try:
+                    # チーム情報書き換え
+                    participants = self.get_participants(tournament_id)
+                    cursor.execute('TRUNCATE TABLE teamss')
+                    for participant in participants:
+                        id = participant.id
+                        name = participant.name
+                        cursor.execute("SELECT ballchasing_id FROM cnv_teams WHERE toornament_id = %s", [id])
+                        bc_team_id = cursor.fetchone()[0]
+                        cursor.execute("INSERT INTO teams (id, name, bc_team_id) VALUES (%s, %s, %s)", (id, name, bc_team_id))
+
+                    # Background Task Status
+                    values = (background_task_id, 'toornament init_db ended', datetime.datetime.now())
+                    cursor.execute("INSERT INTO background_tasks (id, status, created_at) VALUES (%s, %s, %s)", values)
+
+                except:
+                    st = traceback.format_exc()
+
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Background Task Status
+                status = 'toornament init_db ended' if st is None else f'toornament init_db error: {st}'
+                values = (background_task_id, status, datetime.datetime.now())
+                cursor.execute("INSERT INTO background_tasks (id, status, created_at) VALUES (%s, %s, %s)", values)

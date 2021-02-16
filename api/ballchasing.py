@@ -1,4 +1,6 @@
+import datetime
 import requests
+import traceback
 from psycopg2 import extras
 
 from api import settings, database
@@ -69,7 +71,7 @@ class Ballchasing:
             replay_groups.append(group)
         return replay_groups
 
-    def init_db(self, group_id):
+    def init_db(self, group_id, background_task_id):
         """データベース初期化
 
         Args:
@@ -77,64 +79,82 @@ class Ballchasing:
         """
         with database.get_connection() as conn:
             with conn.cursor() as cursor:
-                tables = [
-                    'groups',
-                    'players',
-                    'cumulatives',
-                    'cumulative_cores',
-                    'cumulative_boosts',
-                    'cumulative_movements',
-                    'cumulative_positionings',
-                    'cumulative_demos',
-                    'game_averages',
-                    'game_average_cores',
-                    'game_average_boosts',
-                    'game_average_movements',
-                    'game_average_positionings',
-                    'game_average_demos'
-                ]
-                for table in tables:
-                    cursor.execute(f'TRUNCATE TABLE {table}')
+                # Background Task Status
+                values = (background_task_id, 'ballchasing init_db started', datetime.datetime.now())
+                cursor.execute("INSERT INTO background_tasks (id, status, created_at) VALUES (%s, %s, %s)", values)
 
-                # グループ情報書き換え
-                group = self.get_group(group_id)
-                self.init_db_group(cursor, group, None)
+        st = None
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                try:
+                    tables = [
+                        'groupss',
+                        'players',
+                        'cumulatives',
+                        'cumulative_cores',
+                        'cumulative_boosts',
+                        'cumulative_movements',
+                        'cumulative_positionings',
+                        'cumulative_demos',
+                        'game_averages',
+                        'game_average_cores',
+                        'game_average_boosts',
+                        'game_average_movements',
+                        'game_average_positionings',
+                        'game_average_demos'
+                    ]
+                    for table in tables:
+                        cursor.execute(f'TRUNCATE TABLE {table}')
 
-                cumulative_values = {
-                    'base': [],
-                    'core': [],
-                    'boost': [],
-                    'movement': [],
-                    'positioning': [],
-                    'demo': [],
-                }
-                game_average_values = {
-                    'base': [],
-                    'core': [],
-                    'boost': [],
-                    'movement': [],
-                    'positioning': [],
-                    'demo': [],
-                }
+                    # グループ情報書き換え
+                    group = self.get_group(group_id)
+                    self.init_db_group(cursor, group, None)
 
-                # プレイヤー情報書き換え
-                for player in group.players:
-                    self.init_db_player(cursor, player)
-                    self.init_db_cumulative(cursor, group, player, cumulative_values)
-                    # self.init_db_game_average(cursor, group, player)
+                    cumulative_values = {
+                        'base': [],
+                        'core': [],
+                        'boost': [],
+                        'movement': [],
+                        'positioning': [],
+                        'demo': [],
+                    }
+                    game_average_values = {
+                        'base': [],
+                        'core': [],
+                        'boost': [],
+                        'movement': [],
+                        'positioning': [],
+                        'demo': [],
+                    }
 
-                # 子グループ情報書き換え
-                group_children = self.get_group_children(group_id)
-                for child in group_children:
-                    self.init_db_group(cursor, child, group_id)
+                    # プレイヤー情報書き換え
+                    for player in group.players:
+                        self.init_db_player(cursor, player)
+                        self.init_db_cumulative(cursor, group, player, cumulative_values)
+                        self.init_db_game_average(cursor, group, player, game_average_values)
 
-                    for player in child.players:
-                        self.init_db_cumulative(cursor, child, player, cumulative_values)
-                        self.init_db_game_average(cursor, child, player, game_average_values)
+                    # 子グループ情報書き換え
+                    group_children = self.get_group_children(group_id)
+                    for child in group_children:
+                        self.init_db_group(cursor, child, group_id)
 
-                # Bulk Insert
-                self.bulk_insert_cumulative(cursor, cumulative_values)
-                self.bulk_insert_game_average(cursor, game_average_values)
+                        for player in child.players:
+                            self.init_db_cumulative(cursor, child, player, cumulative_values)
+                            self.init_db_game_average(cursor, child, player, game_average_values)
+
+                    # Bulk Insert
+                    self.bulk_insert_cumulative(cursor, cumulative_values)
+                    self.bulk_insert_game_average(cursor, game_average_values)
+
+                except:
+                    st = traceback.format_exc()
+
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Background Task Status
+                status = 'ballchasing init_db ended' if st is None else f'ballchasing init_db error: {st}'
+                values = (background_task_id, status, datetime.datetime.now())
+                cursor.execute("INSERT INTO background_tasks (id, status, created_at) VALUES (%s, %s, %s)", values)
 
     def create_format_str(self, values):
         """フォーマット文字列生成
@@ -627,6 +647,42 @@ class Ballchasing:
                 grp.parent_group_id is not null
             order by
                 grp.created, cml_core.score desc
+        """
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql)
+                columns = [column[0] for column in cursor.description]
+                results = []
+                for row in cursor.fetchall():
+                    results.append(dict(zip(columns, row)))
+                return results
+
+    def get_scores_all(self):
+        """全試合スコア取得
+        """
+
+        sql = """
+            select
+                ply.name as player_name,
+                cml.wins,
+                cml_core.score,
+                cml_core.goals,
+                cml_core.shots,
+                cml_core.shooting_percentage,
+                cml_core.assists,
+                cml_core.saves
+            from
+                groups grp
+            inner join cumulatives cml on
+                grp.id = cml.group_id
+            inner join cumulative_cores cml_core on
+                cml.core_id = cml_core.id
+            inner join players ply on
+                cml.player_id = ply.id
+            where
+                grp.parent_group_id is null
+            order by
+                cml_core.score desc
         """
         with database.get_connection() as conn:
             with conn.cursor() as cursor:
