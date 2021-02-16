@@ -88,7 +88,7 @@ class Ballchasing:
             with conn.cursor() as cursor:
                 try:
                     tables = [
-                        'groupss',
+                        'groups',
                         'players',
                         'cumulatives',
                         'cumulative_cores',

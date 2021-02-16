@@ -185,17 +185,13 @@ class Toornament:
                 try:
                     # チーム情報書き換え
                     participants = self.get_participants(tournament_id)
-                    cursor.execute('TRUNCATE TABLE teamss')
+                    cursor.execute('TRUNCATE TABLE teams')
                     for participant in participants:
                         id = participant.id
                         name = participant.name
                         cursor.execute("SELECT ballchasing_id FROM cnv_teams WHERE toornament_id = %s", [id])
                         bc_team_id = cursor.fetchone()[0]
                         cursor.execute("INSERT INTO teams (id, name, bc_team_id) VALUES (%s, %s, %s)", (id, name, bc_team_id))
-
-                    # Background Task Status
-                    values = (background_task_id, 'toornament init_db ended', datetime.datetime.now())
-                    cursor.execute("INSERT INTO background_tasks (id, status, created_at) VALUES (%s, %s, %s)", values)
 
                 except:
                     st = traceback.format_exc()
