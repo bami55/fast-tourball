@@ -5,7 +5,9 @@ body {
 
 .main-container {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
 }
 
 .main-container>div {
@@ -13,10 +15,5 @@ body {
 }
 
 .chart-container {
-  /* flex: 0 0 auto; */
   width: 50%;
-}
-
-.chart-container>canvas {
-  justify-content: center;
 }
