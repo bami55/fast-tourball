@@ -1,0 +1,22 @@
+body {
+  background: rgb(8, 2, 36);
+  padding: 16px;
+}
+
+.main-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.main-container>div {
+  padding: 0px 10px;
+}
+
+.chart-container {
+  /* flex: 0 0 auto; */
+  width: 50%;
+}
+
+.chart-container>canvas {
+  justify-content: center;
+}

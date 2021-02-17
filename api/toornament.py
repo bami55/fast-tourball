@@ -1,5 +1,9 @@
+import datetime
 import json
 import requests
+import traceback
+
+from psycopg2 import extras
 
 from api import settings, database
 from api.models.toornament import Tournament, Participant, Group, Stage, Match, MatchGame
@@ -164,7 +168,7 @@ class Toornament:
         match_games = [MatchGame(**x) for x in r.json()]
         return match_games
 
-    def init_db(self, tournament_id):
+    def init_db(self, tournament_id, background_task_id):
         """DB初期化
 
         Args:
@@ -172,13 +176,111 @@ class Toornament:
         """
 
         with database.get_connection() as conn:
-            with conn.cursor() as cur:
-                # チーム情報書き換え
-                participants = self.get_participants(tournament_id)
-                cur.execute('TRUNCATE TABLE teams')
-                for participant in participants:
-                    id = participant.id
-                    name = participant.name
-                    cur.execute("SELECT ballchasing_id FROM cnv_teams WHERE toornament_id = %s", [id])
-                    bc_team_id = cur.fetchone()[0]
-                    cur.execute("INSERT INTO teams (id, name, bc_team_id) VALUES (%s, %s, %s)", (id, name, bc_team_id))
+            with conn.cursor() as cursor:
+                # Background Task Status
+                values = (background_task_id, 'toornament init_db started', datetime.datetime.now())
+                cursor.execute("INSERT INTO background_tasks (id, status, created_at) VALUES (%s, %s, %s)", values)
+
+        st = None
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                try:
+                    tables = [
+                        'teams',
+                        'matches',
+                        'match_opponents'
+                    ]
+                    for table in tables:
+                        cursor.execute(f'TRUNCATE TABLE {table}')
+
+                    # チーム情報書き換え
+                    participants = self.get_participants(tournament_id)
+                    for participant in participants:
+                        id = participant.id
+                        name = participant.name
+                        cursor.execute("SELECT ballchasing_id FROM cnv_teams WHERE toornament_id = %s", [id])
+                        bc_team_id = cursor.fetchone()[0]
+                        cursor.execute("INSERT INTO teams (id, name, bc_team_id) VALUES (%s, %s, %s)", (id, name, bc_team_id))
+
+                    # マッチ情報書き換え
+                    match_values = {
+                        'base': [],
+                        'opponent': []
+                    }
+                    matches = self.get_matches(tournament_id)
+                    for match in matches:
+                        self.init_db_match(cursor, match, match_values)
+                        for op in match.opponents:
+                            self.init_db_match_opponent(cursor, match, op, match_values)
+
+                    # Bulk Insert
+                    self.bulk_insert_match(cursor, match_values)
+
+                except:
+                    st = traceback.format_exc()
+
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # Background Task Status
+                status = 'toornament init_db ended' if st is None else f'toornament init_db error: {st}'
+                values = (background_task_id, status, datetime.datetime.now())
+                cursor.execute("INSERT INTO background_tasks (id, status, created_at) VALUES (%s, %s, %s)", values)
+
+    def init_db_match(self, cursor, match, match_values):
+        """マッチ情報初期化
+
+        Args:
+            cursor (obj): cursor
+            match (Match): マッチ情報
+            match_values (array): 登録データ
+        """
+        values = (
+            match.id,
+            match.status,
+            match.stage_id,
+            match.group_id,
+            match.round_id,
+            match.number,
+            match.type,
+            match.scheduled_datetime,
+            match.public_note,
+            match.private_note,
+            match.played_at,
+            match.report_closed
+        )
+
+        match_values['base'].append(values)
+
+    def init_db_match_opponent(self, cursor, match, op, match_values):
+        """マッチ詳細情報初期化
+
+        Args:
+            cursor (obj): cursor
+            match (Match): マッチ情報
+            op (Opponent): マッチ詳細情報
+            match_values (array): 登録データ
+        """
+        values = (
+            match.id,
+            op.number,
+            op.position,
+            op.result,
+            op.rank,
+            op.forfeit,
+            op.score,
+            op.participant.id
+        )
+
+        match_values['opponent'].append(values)
+
+    def bulk_insert_match(self, cursor, values):
+        """マッチ情報 BULK INSERT
+
+        Args:
+            cursor ([type]): [description]
+            values ([type]): [description]
+        """
+        extras.execute_values(
+            cursor, "INSERT INTO matches (id, status, stage_id, group_id, round_id, number, type, scheduled_datetime, public_note, private_note, played_at, report_closed) VALUES %s", values['base'])
+        extras.execute_values(
+            cursor, "INSERT INTO match_opponents (match_id, number, position, result, rank, forfeit, score, participant_id) VALUES %s", values['opponent'])
