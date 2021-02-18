@@ -142,7 +142,18 @@ def get_streaming_match():
     try:
         with database.get_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(f"SELECT * FROM streaming_match ORDER BY position")
+                sql = """
+                    SELECT
+                        sm.position,
+                        sm.team_id,
+                        t.name as team_name
+                    FROM streaming_match sm
+                    INNER JOIN teams t
+                        ON sm.team_id = t.id
+                    ORDER BY
+                        position
+                """
+                cursor.execute(sql)
                 columns = [column[0] for column in cursor.description]
                 teams = []
                 for row in cursor.fetchall():
