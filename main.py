@@ -137,6 +137,22 @@ def get_teams():
         return {"error": st}
 
 
+@app.get("/streaming_match")
+def get_streaming_match():
+    try:
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(f"SELECT * FROM streaming_match ORDER BY position")
+                columns = [column[0] for column in cursor.description]
+                teams = []
+                for row in cursor.fetchall():
+                    teams.append(dict(zip(columns, row)))
+                return {"teams": teams}
+    except:
+        st = traceback.format_exc()
+        return {"error": st}
+
+
 @app.post("/streaming_match")
 def set_streaming_match(teams: list):
     try:
