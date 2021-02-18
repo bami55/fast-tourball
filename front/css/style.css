@@ -13,6 +13,10 @@ body {
   color: #eeeeee;
 }
 
+.form select option {
+  background: rgb(57, 57, 80);
+}
+
 .form {
   padding: 10rem 2rem;
 }
