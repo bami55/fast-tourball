@@ -101,19 +101,6 @@ async def init_db(tournament_id, group_id, background_tasks: BackgroundTasks):
     return {"status": "DBの初期化を開始しました。"}
 
 
-@app.get("/teams")
-def get_teams():
-    try:
-        with database.get_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(f"SELECT * FROM teams ORDER BY id")
-                teams = cursor.fetchall()
-                return {"teams": teams}
-    except:
-        st = traceback.format_exc()
-        return {"error": st}
-
-
 @app.get("/scores_by_days")
 def get_scores_by_days():
     try:
@@ -129,6 +116,22 @@ def get_scores_all():
     try:
         scores = ballchasing.get_scores_all()
         return {"scores": scores}
+    except:
+        st = traceback.format_exc()
+        return {"error": st}
+
+
+@app.get("/teams")
+def get_teams():
+    try:
+        with database.get_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(f"SELECT * FROM teams ORDER BY id")
+                columns = [column[0] for column in cursor.description]
+                teams = []
+                for row in cursor.fetchall():
+                    teams.append(dict(zip(columns, row)))
+                return {"teams": teams}
     except:
         st = traceback.format_exc()
         return {"error": st}
