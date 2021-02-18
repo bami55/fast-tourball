@@ -663,6 +663,8 @@ class Ballchasing:
 
         sql = """
             select
+                tm.id as team_id,
+                tm.name as team_name,
                 ply.name as player_name,
                 cml.wins,
                 cml_core.score,
@@ -686,6 +688,8 @@ class Ballchasing:
                 cml.core_id = cml_core.id
             inner join players ply on
                 cml.player_id = ply.id
+            inner join teams tm on
+                tm.bc_team_id = ply.team_id
             where
                 grp.parent_group_id is null
             order by
