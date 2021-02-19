@@ -673,7 +673,7 @@ class Ballchasing:
                 cml_core.shooting_percentage,
                 cml_core.assists,
                 cml_core.saves,
-                cml_demo.taken as demos,
+                cml_demo.inflicted as demos,
                 (cml.wins / (select max(wins) from cumulatives) * 100) wins_parameter,
                 (cml_core.score / (select max(score) from cumulative_cores) * 100) score_parameter,
                 (cml_core.goals / (select max(goals) from cumulative_cores) * 100) goals_parameter,
@@ -681,7 +681,7 @@ class Ballchasing:
                 (cml_core.shooting_percentage / (select max(shooting_percentage) from cumulative_cores) * 100) shooting_percentage_parameter,
                 (cml_core.assists / (select max(assists) from cumulative_cores) * 100) assists_parameter,
                 (cml_core.saves / (select max(saves) from cumulative_cores) * 100) saves_parameter,
-                (cml_demo.taken / (select max(taken) from cumulative_demos) * 100) demos_parameter
+                (cml_demo.inflicted / (select max(inflicted) from cumulative_demos) * 100) demos_parameter
             from
                 groups grp
             inner join cumulatives cml on
